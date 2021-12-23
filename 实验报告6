@@ -1,0 +1,241 @@
+
+
+
+ 
+
+实 验 报 告
+（20  21    /20 22    学年 第 一 学期）
+
+
+
+课程名称	高级语言程序设计（B0300011S-56学时）
+实验名称	实验六   结构体与文件实验
+实验时间	      20 21	年	12 	月	 23	日
+指导单位	   计算机学院、软件学院、网络空间安全学院
+指导教师	
+
+学院(系)	计算机学院、软件学院、网络空间安全学院	专    业	数据科学与大数据技术
+
+ 
+
+实 验 报 告
+实验名称	实验六  结构体与文件实验	指导教
+实验类型	验证	实验学时	2	实验时间	20211223
+一、	实验目的和要求
+（1）掌握结构体类型以及结构体变量的定义与使用。
+（2）综合运用结构体、数组、指针等知识，解决相关问题。
+（3）会正确定义FILE*指针，掌握文件操作从打开、读写到关闭的完整过程。
+（4）理解文本文件和二进制文件的区别和不同的读写方式。
+二、实验环境(实验设备)
+硬件:  微型计算机
+软件:  Windows 操作系统、Microsoft Visual Studio 2010
+三、实验原理及内容
+实验题目（1）【见实验教材实验八的题目3】：编写程序exp8_3.c，验证用户输入的日期格式是否正确，如果不正确，则提示重新输入，直到重新输入正确为止。（提示：需要定义一个表示日期的结构体类型struct Date，包括年、月、日信息,并用typedef重新定义新类型名Date；检查日期是否有效，定义为函数int checkDate(Date date)）。
+实验解答：① 源程序代码如下：
+#include<stdio.h>
+struct Date
+{	int year,month,day;};
+typedef struct Date Date;
+int nday[13]={0,31,29,31,30,31,30,31,31,30,31,30,31};
+int checkDate(Date date)
+{
+	int y=date.year,m=date.month,d=date.day;
+	//if(y<1900||y>2018)return 0;
+	if(m<1||m>12)return 0;
+	if(d<0||d>nday[m])return 0;
+	if(m==2&&d==29&&!(y%4==0&&y%100!=0||y%400==0))return 0;
+	return 1;
+}
+int main()
+{
+	Date DATE;
+scanf("%d%d%d",&DATE.year,&DATE.month,&DATE.day);
+	while(!checkDate(DATE))
+	{
+		printf("请重新输入"); 
+		scanf("%d%d%d",&DATE.year,&DATE.month,&DATE.day);	
+	}
+	printf("日期是%d年%d月%d日",DATE.year,DATE.month,DATE.day); 
+	return 0;
+}② 运行程序时，依次输入下面的几组年月日数据作为测试用例，观察程序的运行情况
+测试用例	输入的原始数据	需要重新输入或你的输出结果
+用例1	2002  4  31	需要重新输入
+用例2	1809  12  3	日期是1809年12月3日
+用例3	2020  5  4	日期是2020年5月4日
+用例4	2000  2  29	日期是2000年2月29日
+用例5	1908  14  23	需要重新输入
+用例6	2003  11  -8	需要重新输入
+用例7	1996  2  31	需要重新输入
+用例8	1996  5  19	日期是1996年5月19日
+
+实验题目（2）【见实验教材实验九的题目1】：编写程序exp9_1.c ，从键盘读入一系列字符并以“#”结束，将读入的字符（不包括#号）存入文本文件D:\f1.txt中，再从该文件读取内容，并在显示器上原样显示。
+实验解答：  写出完整的源程序代码并做适当注释：
+#include<stdio.h>
+#include<stdlib.h>
+int main()
+{
+	char ch;
+	FILE *fp;
+	fp=fopen("D:\\f1.txt","w");//打开文件，准备写入 
+	if(!fp){printf("error");return 0;}//打开失败 
+	do
+	{
+		ch=getchar();
+		fputc(ch,fp);//输出到文件 
+	}while(ch!='#');//一直到'#'结束 
+	fclose(fp);//关闭 
+	fp=fopen("D:\\f1.txt","r");//打开文件，准备读入 
+	if(!fp){printf("error");return 0;}//打开失败 
+	while((ch=fgetc(fp))!=EOF)putchar(ch);//读到文件末尾 
+	fclose(fp);//关闭 
+	return 0;
+}
+
+实验题目（3）【见实验教材实验九的题目2】：某班有学生若干名（不超过40名），其信息的组织采用如下的结构体定义。编写程序exp9_2.c，完成要求的功能。
+struct Student
+{
+	char ID[20];
+	char name[30];
+	int age;
+	double score;
+};
+① 从键盘读入该班级学生的信息。
+② 将所有的学生信息存入D:\Info.dat文件中、关闭该文件，建立文件定义函数CreateFile实现。
+③　另写一个函数ReadOut，将D:\Info.dat文件中的信息读入到内存，并依次输出到显示器上，该函数由main函数调用。
+④编写函数Sort，实现按成绩由高到低将学生记录进行排序并输出排序后的结果。
+⑤文件读写采用二进制读写（fread、fwrite）方式。实验解答：  ①请写出完整的源程序代码并做适当注释：
+#include<stdio.h>
+#include<stdlib.h>
+struct Student
+{
+	char ID[20];
+	char name[30];
+	int age;
+	double score;
+};
+void CreateFile(struct Student stu[],int n)
+{
+	FILE *fp;
+	fp=fopen("D:\\Info.dat","wb");//打开文件 
+	if(!fp){printf("error");exit(0);}//打开失败 
+	fwrite(stu,sizeof(struct Student),n,fp);//写数据 
+	fclose(fp);//关闭文件 
+}
+void ReadOut(char s[])
+{
+	struct Student stu;
+	FILE *fp;
+	fp=fopen(s,"rb");
+	if(!fp){printf("error");exit(0);}
+	while(1)
+	{
+		fread(&stu,sizeof(stu),1,fp);//每次读一个struct Student 
+		if(feof(fp))break;//读到结尾，跳出循环 
+		printf("%s %s %d %lf\n",stu.ID,stu.name,stu.age,stu.score);
+	}
+	fclose(fp); 
+} 
+
+void Sort(int n)
+{
+	struct Student stu[50];
+	FILE *fp;
+	int i,j;
+	fp=fopen("D:\\Info.dat","rb");//打开Info.dat，准备排序 
+	if(!fp){printf("error");exit(0);}
+	fread(stu,sizeof(struct Student),n,fp);
+	
+	for(i=0;i<n-1;++i)//冒泡排序 
+	  for(j=n-1;j>i;--j)
+	  	if(stu[j].score>stu[j-1].score)
+	{
+		struct Student tmp;
+		tmp=stu[j];stu[j]=stu[j-1];stu[j-1]=tmp;
+	}
+	fclose(fp);
+	
+	fp=fopen("D:\\tmp.dat","wb");//写入tmp.dat 
+	if(!fp){printf("error");exit(0);}
+	fwrite(stu,sizeof(struct Student),n,fp);
+	fclose(fp);
+}
+	 
+int main()
+{
+	struct Student stu[50];
+	int n,i;
+	printf("请输入学生人数\n");//输入 
+	scanf("%d",&n);
+	for(i=0;i<n;++i) 
+	{
+		printf("请输入第%d位学生的ID，姓名，年龄，分数（以空格隔开）\n",i+1);
+		scanf("%s%s%d%lf",stu[i].ID,stu[i].name,&stu[i].age,&stu[i].score);
+		
+	}
+	CreateFile(stu,n);//将stu[]存入Info.dat 
+	ReadOut("D:\\Info.dat");//输出Info.dat 
+	Sort(n);//排序 
+	ReadOut("D:\\tmp.dat");//输出tmp.dat 
+	return 0;} 
+② 运行程序，你从键盘输入的内容以及屏幕显示的结果如下：
+
+输入：
+5
+123 234 234 4
+34 31 3  5
+23432 132 45 232
+234 45 23 234
+34 2324 445 23
+显示：
+123 234 234 4.000000
+34 31 3 5.000000
+23432 132 45 232.000000
+234 45 23 234.000000
+34 2324 445 23.000000
+234 45 23 234.000000
+23432 132 45 232.000000
+34 2324 445 23.000000
+34 31 3 5.000000
+123 234 234 4.000000
+
+四、实验小结（包括问题和解决方法、心得体会、意见与建议、实验出错信息及解决方案等）
+(一)实验中遇到的主要问题及解决方法
+问题：
+1.文件输出乱码
+2.顺序不对
+3.最后一个重复输出
+解决方法
+1.发现自己混淆fopen(const char *s,”r”)和fopen(const char *s,”w”)
+2．冒泡排序错了，复习并修改
+3.Fwrite的fp移位发生在读出最后一个数据之后，所以在fwrite和输出之间加入if判断语句来解决
+（二）实验心得
+1.重视静态差错
+2.要理解每一个语句和算法的本质，避免因死记硬背所产生的误用
+3.使用函数封装有利于debug
+（三）意见与建议（没有可省略）
+	
+
+
+ 
+实 验 报 告
+五、支撑毕业要求指标点
+1-2-H能针对具体的软硬件系统建立数学模型并求解。
+3-1-M掌握软件工程设计和产品开发的基本方法和技术，了解影响设计目标和技术方案的各种因素。
+5-1-H能够了解软件工程相关技术、工具、及基础系统的使用原理和方法，并理解其局限性。
+六、指导教师评语
+评            分             细            则	评分项	优秀	良好	中等	合格	不合格
+	遵守实验室规章制度					
+	学习态度					
+	算法思想准备情况					
+	程序设计能力					
+	解决问题能力					
+	课题功能实现情况					
+	算法设计合理性					
+	算法效能评价					
+	回答问题准确度					
+	报告书写认真程度					
+	内容详实程度					
+	文字表达熟练程度					
+	其它评价意见	
+	本次实验能力达成评价（总成绩）		批阅人		日期	
+
